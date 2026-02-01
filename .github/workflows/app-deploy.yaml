@@ -1,0 +1,46 @@
+name: "Application Deployment (Helm)"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/**'
+      - 'k8s/**'
+
+jobs:
+  deploy:
+    name: "Deploy to GKE"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}'
+          service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
+
+      - name: Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v1
+        with:
+          cluster_name: sowrakasha-cluster
+          location: us-central1 # Make sure this matches terraform default
+
+      - name: Install vLLM (Model Serving)
+        run: |
+          helm upgrade --install vllm ./charts/vllm \
+            --namespace default \
+            --create-namespace \
+            --wait
+
+      - name: Install Frontend
+        run: |
+          helm upgrade --install sowrakasha-web ./charts/web-app \
+            --namespace default \
+            --wait
