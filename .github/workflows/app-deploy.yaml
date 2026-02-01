@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
-    paths:
       - 'charts/**'
       - 'k8s/**'
+  
+  # Allow manual trigger for re-deploying
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -32,15 +34,15 @@ jobs:
           cluster_name: sowrakasha-cluster
           location: us-central1-a # Must match Terraform zonal location
 
-      - name: Install vLLM (Model Serving)
+      - name: Install Ollama (Model Serving)
         run: |
-          helm upgrade --install vllm ./charts/vllm \
+          helm upgrade --install ollama ./charts/ollama \
             --namespace default \
             --create-namespace \
             --wait
 
-      - name: Install Frontend
-        run: |
-          helm upgrade --install sowrakasha-web ./charts/web-app \
-            --namespace default \
-            --wait
+      # - name: Install Frontend (Coming in Phase 4)
+      #   run: |
+      #     helm upgrade --install sowrakasha-web ./charts/web-app \
+      #       --namespace default \
+      #       --wait
