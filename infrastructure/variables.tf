@@ -9,7 +9,4 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "github_repo" {
-  description = "The GitHub Repository (username/repo) for Workload Identity trust."
-  type        = string
-}
+
