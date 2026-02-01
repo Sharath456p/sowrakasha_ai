@@ -30,7 +30,7 @@ jobs:
         uses: google-github-actions/get-gke-credentials@v1
         with:
           cluster_name: sowrakasha-cluster
-          location: us-central1 # Make sure this matches terraform default
+          location: us-central1-a # Must match Terraform zonal location
 
       - name: Install vLLM (Model Serving)
         run: |
