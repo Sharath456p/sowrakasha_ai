@@ -16,30 +16,29 @@ resource "google_container_node_pool" "system_nodes" {
   }
 }
 
-# GPU INFERENCE POOL
-resource "google_container_node_pool" "gpu_inference_nodes" {
-  name     = "gpu-inference-pool"
+# CPU INFERENCE POOL (Fallback)
+# PURPOSE: Running vLLM / Ollama on CPU since GPU quota is 0.
+# COST: Very Low (Spot Instances).
+resource "google_container_node_pool" "cpu_inference_nodes" {
+  name     = "cpu-inference-pool"
   location = "${var.region}-a"
   cluster  = google_container_cluster.primary.name
 
   autoscaling {
-    min_node_count = 0 
+    min_node_count = 0
     max_node_count = 3
   }
 
   node_config {
     spot = true
-    machine_type = "n1-standard-4" 
-    
-    guest_accelerator {
-      type  = "nvidia-tesla-t4"
-      count = 1
-    }
+    machine_type = "e2-standard-4" # 4 vCPU, 16GB RAM. Fits quantized 7B/8B models.
 
-    taint {
-      key    = "nvidia.com/gpu"
-      value  = "true"
-      effect = "NO_SCHEDULE"
+    # User requested CPU only for speed.
+    # No Guest Accelerator.
+    # No Taints (easier scheduling).
+
+    labels = {
+      "workload" = "inference"
     }
 
     service_account = google_service_account.node_sa.email

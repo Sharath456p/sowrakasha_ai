@@ -12,7 +12,7 @@ service:
 
 resources:
   limits:
-    nvidia.com/gpu: 1
+    # nvidia.com/gpu: 1  <-- REMOVED for CPU Mode
     memory: 8Gi
     cpu: 4
   requests:
