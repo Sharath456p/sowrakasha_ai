@@ -21,6 +21,7 @@ on:
 jobs:
   terraform:
     name: "Terraform ${{ inputs.action || 'apply' }}"
+    if: github.actor == 'Sharath456p'
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'

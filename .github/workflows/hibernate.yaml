@@ -15,6 +15,7 @@ on:
 jobs:
   manage-capacity:
     name: "${{ inputs.action == 'hibernate' && '😴 Sleeping' || '⚡ Waking Up' }}"
+    if: github.actor == 'Sharath456p'
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'

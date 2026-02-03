@@ -24,7 +24,7 @@ env:
 jobs:
   build-push:
     name: "Build & Push Container"
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    if: github.actor == 'Sharath456p' && (github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run')
     runs-on: ubuntu-latest
     permissions:
       contents: read
