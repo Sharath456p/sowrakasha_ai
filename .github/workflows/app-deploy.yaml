@@ -99,3 +99,10 @@ jobs:
           helm upgrade --install sowrakasha-web ./charts/web-app \
             --namespace default \
             --wait
+
+      - name: Initialize Brain (Pull Model)
+        run: |
+          echo "🧠 Waking up the Neural Core..."
+          # This runs inside the running Ollama pod
+          kubectl exec -n default deployment/ollama -- ollama pull llama3
+          echo "✅ Brain Active: Llama 3 Ready."
