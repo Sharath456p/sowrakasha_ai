@@ -123,9 +123,11 @@ export default function Home() {
                       ? "bg-gradient-to-br from-purple-700 to-indigo-700 text-white shadow-purple-900/20"
                       : "bg-gray-900/80 border border-gray-800 text-gray-200 backdrop-blur-sm"
                   )}>
-                    <ReactMarkdown className="prose prose-invert prose-p:my-1 prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg">
-                      {m.content}
-                    </ReactMarkdown>
+                    <div className="prose prose-invert prose-p:my-1 prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg">
+                      <ReactMarkdown>
+                        {m.content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </motion.div>
               ))}
