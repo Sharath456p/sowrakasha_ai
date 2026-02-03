@@ -23,7 +23,7 @@ spec:
         pathType: ImplementationSpecific
         backend:
           service:
-            name: sowrakasha-web
+            name: {{ include "ollama.fullname" . }}
             port:
               number: 80
   - host: api.sowrakasha.me
