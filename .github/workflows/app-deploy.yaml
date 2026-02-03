@@ -14,13 +14,56 @@ on:
   workflow_run:
     workflows: ["Infrastructure Manager"]
     types:
+    types:
       - completed
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-web
+
 jobs:
+  build-push:
+    name: "Build & Push Container"
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./web-app
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
   deploy:
     name: "Deploy to GKE"
-    # Only run if the parent workflow was successful
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    needs: build-push  # Wait for build
+    if: ${{ always() }} # Run even if conditional above skipped? No, wait. 
+    # If build-push skipped (e.g. no changes?), deploy should still run?
+    # For now, let's keep it simple: Ensure build runs.
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -49,8 +92,8 @@ jobs:
             --create-namespace \
             --wait
 
-      # - name: Install Frontend (Coming in Phase 4)
-      #   run: |
-      #     helm upgrade --install sowrakasha-web ./charts/web-app \
-      #       --namespace default \
-      #       --wait
+      - name: Install Frontend
+        run: |
+          helm upgrade --install sowrakasha-web ./charts/web-app \
+            --namespace default \
+            --wait

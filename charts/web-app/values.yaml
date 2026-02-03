@@ -1,0 +1,28 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/Sharath456p/sowrakasha-web
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+resources:
+  limits:
+    # nvidia.com/gpu: 1  <-- REMOVED for CPU Mode
+    memory: 512Mi
+    cpu: 500m
+  requests:
+    memory: 256Mi
+    cpu: 250m
+
+persistence:
+  enabled: false
+  size: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  mountPath: /datapp
