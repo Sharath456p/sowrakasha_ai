@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sowrakasha-ingress
+  annotations:
+    # Use the static IP we reserved
+    kubernetes.io/ingress.global-static-ip-name: "sowrakasha-ingress-ip"
+    # Use Google-managed SSL certificates
+    networking.gke.io/managed-certificates: "sowrakasha-cert"
+    # Http -> Https redirect
+    networking.gke.io/v1beta1.FrontendConfig: "ingress-security-config"
+spec:
+  defaultBackend:
+    service:
+      name: sowrakasha-web
+      port:
+        number: 80
+  rules:
+  - host: sowrakasha.me
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: sowrakasha-web
+            port:
+              number: 80
+  - host: api.sowrakasha.me
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: ollama
+            port:
+              number: 11434

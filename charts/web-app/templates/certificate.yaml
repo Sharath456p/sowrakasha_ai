@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: sowrakasha-cert
+spec:
+  domains:
+    - sowrakasha.me
+    - api.sowrakasha.me
