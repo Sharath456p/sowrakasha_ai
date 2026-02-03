@@ -1,0 +1,55 @@
+name: "Hibernate / Wake Up (Cost Saver)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'hibernate'
+        type: choice
+        options:
+        - hibernate
+        - wakeup
+
+jobs:
+  manage-capacity:
+    name: "${{ inputs.action == 'hibernate' && '😴 Sleeping' || '⚡ Waking Up' }}"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}'
+          service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
+
+      - name: Setup GCloud
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: '${{ secrets.GCP_PROJECT_ID }}'
+          install_components: 'gke-gcloud-auth-plugin'
+
+      - name: Hibernate (Scale to 0)
+        if: ${{ inputs.action == 'hibernate' }}
+        run: |
+          echo "💤 Hibernating Cluster to save money..."
+          gcloud container clusters resize sowrakasha-cluster --node-pool inference-pool --num-nodes 0 --region us-central1-a --quiet
+          # Keep system pool at 1 for critical services (Ingress/Cert Manager) or 0 for total shutdown
+          # Keeping 1 system node ensures the IP and Certs stay active (Cost: ~$20/mo)
+          # Setting to 0 saves max money but might delay startup
+          gcloud container clusters resize sowrakasha-cluster --node-pool system-pool --num-nodes 1 --region us-central1-a --quiet
+          echo "✅ Cluster is now Asleep."
+
+      - name: Wake Up (Restore Capacity)
+        if: ${{ inputs.action == 'wakeup' }}
+        run: |
+          echo "⚡ Waking up the Cluster..."
+          # Restore System Pool
+          gcloud container clusters resize sowrakasha-cluster --node-pool system-pool --num-nodes 1 --region us-central1-a --quiet
+          # Restore Inference Pool
+          gcloud container clusters resize sowrakasha-cluster --node-pool inference-pool --num-nodes 1 --region us-central1-a --quiet
+          echo "✅ Cluster is Online."
