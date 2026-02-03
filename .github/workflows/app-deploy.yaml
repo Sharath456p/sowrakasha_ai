@@ -54,6 +54,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./web-app
+          file: ./web-app/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -61,9 +62,7 @@ jobs:
   deploy:
     name: "Deploy to GKE"
     needs: build-push  # Wait for build
-    if: ${{ always() }} # Run even if conditional above skipped? No, wait. 
-    # If build-push skipped (e.g. no changes?), deploy should still run?
-    # For now, let's keep it simple: Ensure build runs.
+    # Removed 'if: always()' so it fails if build fails
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
