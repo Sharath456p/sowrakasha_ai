@@ -10,9 +10,17 @@ on:
   # Allow manual trigger for re-deploying
   workflow_dispatch:
 
+  # CHAINING: Run automatically after Infrastructure is provisioned
+  workflow_run:
+    workflows: ["Infrastructure Manager"]
+    types:
+      - completed
+
 jobs:
   deploy:
     name: "Deploy to GKE"
+    # Only run if the parent workflow was successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
