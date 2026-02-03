@@ -12,7 +12,7 @@ metadata:
 spec:
   defaultBackend:
     service:
-      name: sowrakasha-web
+      name: {{ include "ollama.fullname" . }}
       port:
         number: 80
   rules:
