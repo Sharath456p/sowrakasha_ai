@@ -166,10 +166,7 @@ export default function Home() {
             </div>
           </form>
 
-          {/* Footer Attribution */}
-          <div className="mt-2 text-center text-[10px] text-red-900/40 uppercase tracking-[0.2em] hover:text-red-600 transition-colors duration-500 cursor-help">
-            <span className="animate-pulse mr-2">SYSTEM STATUS: SELF-TRAINED CORE</span> • <span className="ml-2 font-bold">SHARATH’S DIGITAL TWIN</span>
-          </div>
+          {/* Footer Removed */}
         </div>
       </div>
     </main>
