@@ -6,7 +6,7 @@ import { Send, Terminal, ShieldAlert } from 'lucide-react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'System Online. Protocol: Sowrakasha. \nReady for orders.' }
+    { role: 'assistant', content: "Tell me, what's on your mind?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -88,9 +88,9 @@ export default function Home() {
             />
           </div>
           <div>
-            <div className="text-sm font-bold text-red-600 tracking-widest uppercase drop-shadow-[0_0_8px_rgba(255,0,0,0.8)] group-hover:drop-shadow-[0_0_15px_rgba(255,0,0,1)] transition-all">
-              SHARATH’S DIGITAL TWIN
-            </div>
+            <h1 className="text-xl font-bold tracking-widest text-red-600 drop-shadow-[0_0_5px_rgba(255,0,0,0.8)]">
+              SOWRAKASHA_AI
+            </h1>
             <div className="flex items-center gap-2 text-[10px] text-red-800 uppercase">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
