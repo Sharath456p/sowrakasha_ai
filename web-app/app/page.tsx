@@ -1,182 +1,168 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Terminal, Cpu, ShieldCheck } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import ReactMarkdown from 'react-markdown';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-// UTILS
-function cn(...inputs: (string | undefined | null | false)[]) {
-  return twMerge(clsx(inputs));
-}
-
-type Message = {
-  role: 'user' | 'assistant';
-  content: string;
-};
+import Image from 'next/image';
+import { Send, Terminal, ShieldAlert } from 'lucide-react';
 
 export default function Home() {
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Systems Online. \n\nI am **Sowrakasha**, your digital twin architected by **Sharath**. \n\nHow can I serve our mission today?' }
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: 'System Online. Protocol: Sowrakasha. \nReady for orders.' }
   ]);
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    scrollToBottom();
   }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim()) return;
 
-    const userMsg = input.trim();
+    const userMessage = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsLoading(true);
 
     try {
-      // Connect to our internal API (which proxies to Ollama)
-      const res = await fetch('/api/chat', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: userMsg }),
+        body: JSON.stringify({ prompt: input }),
       });
 
-      if (!res.ok) throw new Error('Network response was not ok');
-      const data = await res.json();
-
+      const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `**Error:** Connection to Neural Core failed. \n\nCheck if the GKE Cluster is active.` }]);
-      console.error(error);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'CONNECTION SEVERED. RETRYING...' }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-[#050505] text-gray-100 font-sans selection:bg-purple-900 selection:text-white">
+    <main className="flex min-h-screen flex-col bg-black text-red-500 font-mono selection:bg-red-900 selection:text-white">
+      {/* Glitch Keyframes */}
+      <style jsx global>{`
+        @keyframes pulse-red {
+          0%, 100% { box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000; }
+          50% { box-shadow: 0 0 2px #550000, 0 0 5px #550000; }
+        }
+        @keyframes glitch {
+          0% { transform: translate(0); }
+          20% { transform: translate(-2px, 2px); }
+          40% { transform: translate(-2px, -2px); }
+          60% { transform: translate(2px, 2px); }
+          80% { transform: translate(2px, -2px); }
+          100% { transform: translate(0); }
+        }
+        .glitch-hover:hover {
+          animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+        .scanline {
+          background: linear-gradient(to bottom, rgba(255,0,0,0), rgba(255,0,0,0) 50%, rgba(255,0,0,0.1) 50%, rgba(255,0,0,0.1));
+          background-size: 100% 4px;
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          pointer-events: none;
+          z-index: 50;
+        }
+      `}</style>
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 border-b border-gray-800/50 bg-[#050505]/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 shadow-[0_0_15px_rgba(124,58,237,0.5)]">
-              <ShieldCheck className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-white">Sowrakasha AI</h1>
-              <p className="text-[10px] font-medium tracking-widest text-gray-500 uppercase">
-                Forged By Sharath
-              </p>
-            </div>
+      <div className="scanline"></div>
+
+      {/* Header */}
+      <div className="border-b border-red-900/50 bg-black/80 p-4 backdrop-blur sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <div className="relative h-12 w-12 glitch-hover cursor-pointer border border-red-800 rounded-lg overflow-hidden shadow-[0_0_15px_rgba(255,0,0,0.3)]">
+            <Image
+              src="/logo.png"
+              alt="Sowrakasha Logo"
+              fill
+              className="object-cover"
+            />
           </div>
-
-          <div className="flex items-center gap-4 text-xs font-mono text-gray-500">
-            <div className="flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1 border border-gray-800">
+          <div>
+            <h1 className="text-xl font-bold tracking-widest text-red-600 drop-shadow-[0_0_5px_rgba(255,0,0,0.8)]">
+              SOWRAKASHA_AI
+            </h1>
+            <div className="flex items-center gap-2 text-[10px] text-red-800 uppercase">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
               </span>
-              <span>GKE: ONLINE</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-1.5">
-              <Cpu className="h-3 w-3" />
-              <span>vLLM</span>
+              System Active
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* CHAT AREA */}
-      <div className="flex-1 overflow-hidden relative">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-purple-500 opacity-5 blur-[100px]"></div>
-
-        <div className="mx-auto flex h-full max-w-3xl flex-col px-4 pt-10 pb-4">
+      {/* Chat Area */}
+      <div className="flex-1 max-w-4xl mx-auto w-full p-4 space-y-6 overflow-y-auto pb-32">
+        {messages.map((msg, idx) => (
           <div
-            ref={scrollRef}
-            className="flex-1 space-y-6 overflow-y-auto pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-800"
+            key={idx}
+            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <AnimatePresence initial={false}>
-              {messages.map((m, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className={cn(
-                    "flex w-full",
-                    m.role === 'user' ? "justify-end" : "justify-start"
-                  )}
-                >
-                  <div className={cn(
-                    "max-w-[85%] rounded-2xl px-5 py-3.5 shadow-sm text-sm leading-relaxed",
-                    m.role === 'user'
-                      ? "bg-gradient-to-br from-purple-700 to-indigo-700 text-white shadow-purple-900/20"
-                      : "bg-gray-900/80 border border-gray-800 text-gray-200 backdrop-blur-sm"
-                  )}>
-                    <div className="prose prose-invert prose-p:my-1 prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg">
-                      <ReactMarkdown>
-                        {m.content}
-                      </ReactMarkdown>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-
-              {isLoading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex w-full justify-start"
-                >
-                  <div className="max-w-[85%] rounded-2xl px-5 py-3.5 bg-gray-900/50 border border-gray-800/50 text-gray-400">
-                    <div className="flex items-center gap-2">
-                      <Terminal className="h-3 w-3 animate-spin" />
-                      <span className="text-xs font-mono">Thinking...</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* INPUT */}
-          <div className="mt-6">
-            <form onSubmit={handleSubmit} className="relative group">
-              <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 opacity-30 blur transition duration-1000 group-hover:opacity-60 group-hover:duration-200"></div>
-              <div className="relative flex items-center rounded-xl bg-[#0a0a0a] p-1.5 ring-1 ring-gray-800">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask me anything..."
-                  className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none"
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
+            <div
+              className={`max-w-[85%] rounded border p-4 backdrop-blur-sm ${msg.role === 'user'
+                  ? 'bg-red-950/20 border-red-800 text-red-100 shadow-[0_0_10px_rgba(153,27,27,0.2)]'
+                  : 'bg-black border-red-900/50 text-red-400 shadow-[0_0_5px_rgba(255,0,0,0.1)]'
+                }`}
+            >
+              <div className="mb-1 text-[10px] uppercase tracking-wider opacity-50 flex items-center gap-2">
+                {msg.role === 'user' ? (
+                  <>USER <span className="text-red-500">❯❯</span></>
+                ) : (
+                  <><Terminal size={10} /> CORE</>
+                )}
               </div>
-            </form>
-            <div className="mt-3 flex justify-center gap-4 text-[10px] text-gray-600 font-mono">
-              <span>MODEL: Llama-3-8B</span>
-              <span>•</span>
-              <span>LATENCY: 45ms</span>
-              <span>•</span>
-              <span>ARCHITECT: SHARATH</span>
+              <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
             </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-black border border-red-900/30 p-3 rounded text-red-700 text-xs animate-pulse">
+              _COMPUTING_TENSOR_OPERATIONS...
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="fixed bottom-0 w-full bg-black/90 border-t border-red-900/50 p-4 backdrop-blur-md z-20">
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSubmit} className="relative group">
+            <div className="absolute -inset-0.5 bg-red-600 rounded opacity-20 blur group-hover:opacity-40 transition duration-500"></div>
+            <div className="relative flex items-center bg-black border border-red-800 p-1">
+              <span className="pl-3 text-red-600 font-bold">❯</span>
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Execute command..."
+                className="flex-1 bg-transparent px-4 py-3 text-sm text-red-100 placeholder-red-900/50 focus:outline-none font-mono"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="p-2 text-red-600 hover:text-white hover:bg-red-900 transition disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                <Send size={18} />
+              </button>
+            </div>
+          </form>
+
+          {/* Footer Attribution */}
+          <div className="mt-2 text-center text-[10px] text-red-900/40 uppercase tracking-[0.2em] hover:text-red-600 transition-colors duration-500 cursor-help">
+            Constructed by Sharath
           </div>
         </div>
       </div>
